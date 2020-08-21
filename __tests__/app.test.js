@@ -7,44 +7,43 @@ const app = require('../lib/app');
 const client = require('../lib/client');
 
 describe('app routes', () => {
-  beforeAll(done => {
-    return client.connect(done);
-  });
+  const hate = [
+    'There\'s only one thing I hate more than lying: skim milk. Which is water that\'s lying about being milk.', 
+    'I hate everything.'];
 
-  beforeEach(() => {
-    // TODO: ADD DROP SETUP DB SCRIPT
+  let token;
+
+  beforeAll(async done => {
     execSync('npm run setup-db');
+
+    client.connect();
+
+    const signInData = await fakeRequest(app)
+      .post('/auth/signup')
+      .send({
+        email: 'jon@user.com',
+        password: '1234'
+      });
+    
+    token = signInData.body.token;
+
+    return done();
   });
 
   afterAll(done => {
     return client.end(done);
   });
 
-  test('returns animals', async() => {
+
+  test('returns search results from ron swanson api', async() => {
 
     const expectation = [
-      {
-        'id': 1,
-        'name': 'bessie',
-        'coolfactor': 3,
-        'owner_id': 1
-      },
-      {
-        'id': 2,
-        'name': 'jumpy',
-        'coolfactor': 4,
-        'owner_id': 1
-      },
-      {
-        'id': 3,
-        'name': 'spot',
-        'coolfactor': 10,
-        'owner_id': 1
-      }
+      'There\'s only one thing I hate more than lying: skim milk. Which is water that\'s lying about being milk.',
+      'I hate everything.',
     ];
 
     const data = await fakeRequest(app)
-      .get('/animals')
+      .get('/search')
       .expect('Content-Type', /json/)
       .expect(200);
 
